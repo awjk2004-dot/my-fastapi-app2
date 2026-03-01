@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy import create_all, Column, Integer, String, Float, create_engine
+from sqlalchemy import create_engine, Column, Integer, String, Float # هنا التعديل
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from fastapi.middleware.cors import CORSMiddleware
-from typing import List
+from pydantic import BaseModel # لازم تزيد دي عشان الـ Schema
+
 
 # 1. إعداد قاعدة البيانات (SQLite)
 DATABASE_URL = "sqlite:///./pharmacy.db"
