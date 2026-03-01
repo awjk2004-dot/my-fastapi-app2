@@ -19,7 +19,9 @@ class MedicineSchema(BaseModel):
     price: float
     quantity: int
     class Config:
-        orm_mode = True  # اتأكد إنها M وليست N
+            class Config:
+        from_attributes = True  # بدلاً من orm_mode
+
 
 
 # إنشاء الجدول في الملف
@@ -49,7 +51,9 @@ class MedicineSchema(BaseModel):
     price: float
     quantity: int
     class Config:
-        orm_mode = True
+            class Config:
+        from_attributes = True  # بدلاً من orm_mode
+
 
 # --- المسارات (Endpoints) ---
 
