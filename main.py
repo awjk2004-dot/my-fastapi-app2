@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware  # السطر السحري الناقص 🔥
-from sqlalchemy import create_engine, Column, Integer, String, Float # هنا التعديل
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from pydantic import BaseModel # لازم تزيد دي عشان الـ Schema
-
+from pydantic import BaseModel
+from typing import List  # لازم تزيد دي عشان الـ List تشتغل
 
 # 1. إعداد قاعدة البيانات (SQLite)
 DATABASE_URL = "sqlite:///./pharmacy.db"
@@ -12,20 +12,26 @@ engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# 2. تعريف جدول الأدوية
+# 2. تعريف جدول الأدوية (الـ Model الحقيقي في الداتابيز)
+class MedicineModel(Base):
+    __tablename__ = "medicines"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    price = Column(Float)
+    quantity = Column(Integer)
+
+# إنشاء الجدول في ملف pharmacy.db
+Base.metadata.create_all(bind=engine)
+
+# 3. بروتوكول البيانات (Pydantic Schema)
 class MedicineSchema(BaseModel):
     id: int
     name: str
     price: float
     quantity: int
+
     class Config:
-            class Config:
-        from_attributes = True  # بدلاً من orm_mode
-
-
-
-# إنشاء الجدول في الملف
-Base.metadata.create_all(bind=engine)
+        from_attributes = True
 
 app = FastAPI()
 
@@ -43,17 +49,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-# بروتوكول البيانات (Pydantic)
-class MedicineSchema(BaseModel):
-    id: int
-    name: str
-    price: float
-    quantity: int
-    class Config:
-            class Config:
-        from_attributes = True  # بدلاً من orm_mode
-
 
 # --- المسارات (Endpoints) ---
 
