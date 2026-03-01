@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware # عشان الـ HTML يقدر يكلم الـ API
+from fastapi.middleware.cors import CORSMiddleware
+from typing import List
 
 app = FastAPI()
 
-# تفعيل الـ CORS عشان المتصفح ما يرفض الطلب
+# الـ CORS اللي فعلته إنت (عشان الـ HTML يشتغل)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -12,37 +13,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Student(BaseModel):
+# موديل الدواء
+class Medicine(BaseModel):
     id: int
     name: str
-    grade: int
+    price: float
+    quantity: int
 
-students = [
-    Student(id=1, name="ahmed abdu", grade=1),
-    Student(id=2, name="ali momode", grade=2),
+# لستة الأدوية (مبدئياً)
+pharmacy_stock = [
+    Medicine(id=1, name="Panadol", price=500.0, quantity=20),
+    Medicine(id=2, name="Amoxicillin", price=1200.0, quantity=10)
 ]
 
-@app.get("/student/")
-def read_student():
-    return students
-    
-@app.post("/student/")
-def create_student(New_Student: Student):
-    students.append(New_Student)
-    return New_Student
-    
-@app.put("/student/{student_id}") 
-def update_student(student_id: int, updated_student: Student):
-    for index, student in enumerate(students):
-        if student.id == student_id:
-            students[index] = updated_student
-            return updated_student
-    return {"error": "not found"}
+@app.get("/medicines/", response_model=List[Medicine])
+def get_all_medicines():
+    return pharmacy_stock
 
-@app.delete("/student/{student_id}")
-def delete_student(student_id: int):
-    for index, student in enumerate(students):
-        if student.id == student_id:
-            del students[index]
-            return {"message": "Student deleted"}
-    return {"message": "error Student not found"}
+@app.post("/add-medicine/")
+def add_medicine(med: Medicine):
+    pharmacy_stock.append(med)
+    return {"message": "تمت إضافة الدواء بنجاح!", "data": med}
