@@ -12,12 +12,14 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # 2. تعريف جدول الأدوية
-class MedicineModel(Base):
-    __tablename__ = "medicines"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    price = Column(Float)
-    quantity = Column(Integer)
+class MedicineSchema(BaseModel):
+    id: int
+    name: str
+    price: float
+    quantity: int
+    class Config:
+        orm_mode = True  # اتأكد إنها M وليست N
+
 
 # إنشاء الجدول في الملف
 Base.metadata.create_all(bind=engine)
