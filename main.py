@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware  # السطر السحري الناقص 🔥
 from sqlalchemy import create_engine, Column, Integer, String, Float # هنا التعديل
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
