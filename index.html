@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام ستارلينك 🛰️</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 90%; max-width: 500px; }
+        .hidden { display: none; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-main { background: #3498db; color: white; }
+        .btn-danger { background: #e74c3c; color: white; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: center; }
+        .admin-link { margin-top: 20px; font-size: 10px; color: #ccc; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="view-customer">
+            <h2>مرحباً بك في ستارلينك 🛰️</h2>
+            <p>ادخل اسمك (أو اسم جهازك) لتفعيل النت:</p>
+            <input type="text" id="cust_name" placeholder="مثلاً: محمد - Honor X6">
+            <button class="btn-main" onclick="register()">تفعيل الآن ✅</button>
+            <p id="status-msg"></p>
+            <div class="admin-link" onclick="promptAdmin()">الإدارة</div>
+        </div>
+
+        <div id="view-admin" class="hidden">
+            <button onclick="switchView('customer')" style="width: auto; background: #95a5a6; color: white; padding: 5px 10px; font-size: 12px;">← رجوع</button>
+            <h3>📊 مراقبة الأجهزة (المدير)</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr><th>الاسم</th><th>IP</th><th>البصمة</th></tr>
+                    </thead>
+                    <tbody id="listBody"></tbody>
+                </table>
+            </div>
+            <button class="btn-danger" onclick="clearTable()">تصفير الجدول ليوم جديد 🧹</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://My-fastapi-app2-production-5d0a.up.railway.app";
+
+        // دالة التنقل بين الواجهات
+        function switchView(view) {
+            document.getElementById('view-customer').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+            if(view === 'customer') document.getElementById('view-customer').classList.remove('hidden');
+            if(view === 'admin') document.getElementById('view-admin').classList.remove('hidden');
+        }
+
+        // تسجيل الزبون
+        async function register() {
+            const name = document.getElementById('cust_name').value;
+            if(!name) return alert("اكتب اسمك أولاً!");
+            const res = await fetch(`${API_URL}/register/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({customer_name: name})
+            });
+            const data = await res.json();
+            document.getElementById('status-msg').innerText = data.msg;
+        }
+
+        // دخول المدير بكلمة سر
+        function promptAdmin() {
+            const pass = prompt("ادخل كلمة سر المدير:");
+            if(pass === "1234") { // غير كلمة السر دي
+                switchView('admin');
+                loadList();
+            } else {
+                alert("كلمة سر غلط يا مكنة!");
+            }
+        }
+
+        // جلب البيانات للمدير
+        async function loadList() {
+            const res = await fetch(`${API_URL}/admin/list/`);
+            const result = await res.json();
+            const body = document.getElementById('listBody');
+            body.innerHTML = result.data.map(d => `
+                <tr>
+                    <td>${d.customer_name}</td>
+                    <td>${d.ip}</td>
+                    <td title="${d.user_agent}">${d.user_agent.substring(0,10)}...</td>
+                </tr>
+            `).join('');
+        }
+
+        // حذف كل البيانات
+        async function clearTable() {
+            if(confirm("هل أنت متأكد من حذف كل بيانات اليوم؟")) {
+                await fetch(`${API_URL}/admin/clear-all/`, { method: 'DELETE' });
+                alert("تم تنظيف الجدول!");
+                loadList();
+            }
+        }
+    </script>
+</body>
+</html>
