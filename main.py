@@ -5,6 +5,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel
 import datetime
+from fastapi.responses import FileResponse
+import os
+
 
 DATABASE_URL = "sqlite:///./pharmacy.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
@@ -37,6 +40,12 @@ def get_db():
     db = SessionLocal()
     try: yield db
     finally: db.close()
+@app.get("/")
+async def read_index():
+    # التأكد إن الملف موجود في الفولدر
+    if os.path.exists("index.html"):
+        return FileResponse('index.html')
+    return {"error": "ملف index.html غير موجود في السيرفر!"}
 
 @app.post("/register/")
 def register_device(data: DeviceRegister, request: Request, db: Session = Depends(get_db)):
